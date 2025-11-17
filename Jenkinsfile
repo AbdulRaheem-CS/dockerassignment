@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         DOCKER_COMPOSE_FILE = 'docker-compose-jenkins.yml'
-        GIT_REPO = 'https://github.com/david-clinger/coreReputation.git'
+        GIT_REPO = 'https://github.com/AbdulRaheem-CS/dockerassignment.git'
         GIT_BRANCH = 'main'
     }
     
