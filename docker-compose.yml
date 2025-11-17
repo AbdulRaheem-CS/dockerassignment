@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # MongoDB Database Service
+  mongodb:
+    image: mongo:7.0
+    container_name: corereputation-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: securepassword123
+      MONGO_INITDB_DATABASE: corereputation
+    ports:
+      - "27017:27017"
+    volumes:
+      # Persistent volume for MongoDB data
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js Web Application Service
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: corereputation-webapp
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://admin:securepassword123@mongodb:27017/corereputation?authSource=admin
+      - JWT_SECRET=your_jwt_secret_key_here_change_in_production
+      - NEXTAUTH_SECRET=your_nextauth_secret_here_change_in_production
+      - NEXTAUTH_URL=http://localhost:3000
+      - PORT=3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - app-network
+
+# Named volumes for data persistence
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+
+# Network for container communication
+networks:
+  app-network:
+    driver: bridge
